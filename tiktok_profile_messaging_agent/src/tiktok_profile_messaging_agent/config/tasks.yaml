@@ -1,0 +1,46 @@
+---
+search_travel_profiles:
+  description: 'Use SeleniumScrapingTool to search TikTok for profiles using travel-related
+    keywords: {travel_keywords}. The tool should navigate TikTok''s search or explore
+    page to collect profile URLs.'
+  expected_output: A list of TikTok profile URLs matching the travel keyword criteria.
+  async_execution: false
+  agent: profile_finder
+extract_profile_details:
+  description: For each profile URL found, navigate to the profile page and extract
+    essential details such as the bio, follower count, and prominently used hashtags
+    using SeleniumScrapingTool.
+  expected_output: Detailed profile information including {bio}, {follower_count},
+    and {hashtags} for each profile.
+  async_execution: false
+  agent: profile_finder
+  context:
+  - search_travel_profiles
+filter_travel_profiles:
+  description: Analyze the extracted profile details and filter out profiles that
+    do not have at least {min_followers} followers or do not contain travel-related
+    keywords ({travel_keywords}) in their bio or hashtags.
+  expected_output: A filtered list of profiles that meet the criteria for travel content
+    and follower count.
+  async_execution: false
+  agent: profile_filter
+  context:
+  - extract_profile_details
+send_dm_to_profiles:
+  description: Using SeleniumScrapingTool, log into TikTok with credentials {username}
+    and {password} and send a direct message containing {dm_message} to each profile
+    from the filtered list.
+  expected_output: Confirmation that the direct message {dm_message} was successfully
+    sent to each qualifying profile.
+  async_execution: false
+  agent: dm_dispatcher
+  context:
+  - filter_travel_profiles
+log_messaging_outcomes:
+  description: Compile and log details of each messaging attempt, including profiles
+    successfully contacted and any errors encountered during the process.
+  expected_output: A comprehensive log report detailing the messaging campaign's outcomes.
+  async_execution: false
+  agent: logger
+  context:
+  - send_dm_to_profiles
